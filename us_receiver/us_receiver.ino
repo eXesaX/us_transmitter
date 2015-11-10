@@ -1,10 +1,11 @@
 #define OUTPUT_INTERVAL 1000
-#define SIGNALS_GAP 300
+#define SIGNAL_GAP 450
 
 volatile long acc = 0;
 volatile long lastFrontTime = 0;
 volatile int signalsReceived = 0;
 long IOTimer = 0;
+String message = "";
 
 void setup() {
   // put your setup code here, to run once:
@@ -17,9 +18,14 @@ void setup() {
 
 void onHigh() {
   acc += 1;
-  if ((millis() - lastFrontTime > SIGNALS_GAP)) {
+  if ((millis() - lastFrontTime > 2*SIGNAL_GAP)) {
     signalsReceived += 1;
     acc = 0;
+    message.concat("0");
+  } else if ((millis() - lastFrontTime > SIGNAL_GAP)) {
+    signalsReceived += 1;
+    acc = 0;
+    message.concat("1");
   }
   lastFrontTime = millis();
   
@@ -27,7 +33,8 @@ void onHigh() {
 
 void loop() {
   if ((millis() - IOTimer) > OUTPUT_INTERVAL) {
-    Serial.println(signalsReceived);
+    Serial.print(signalsReceived);
+    Serial.println(" " + message);
     IOTimer = millis();
   }
   
