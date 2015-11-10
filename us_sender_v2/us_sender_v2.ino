@@ -1,6 +1,8 @@
 #define TIME 12
 #define SIGNAL_GAP 130
 
+String message = "Hello, world!\n";
+
 void setup() {
   DDRB = B00000011;
   //pinMode(8, OUTPUT);
@@ -37,8 +39,8 @@ void sendBits(String bits) {
 }
 
 void loop() {
-  for (int num = 0; num < 255; num++) {
-    sendBits(String(num, BIN));  
+  for (int num = 0; num < message.length(); num++) {
+    sendBits(String((byte)message.charAt(num), BIN));  
   }
   
 }

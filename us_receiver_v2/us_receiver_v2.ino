@@ -47,17 +47,30 @@ void detectEOM() {
 void showMessage() {
 //  char lastBit = message.charAt(message.length() - 1);
 //  message.remove(message.length() - 1);
-  Serial.println("Message: " + message);
+//  Serial.println("Message: " + message);
+  char str[8];
+  message.toCharArray(str, 8);
+  char symbol = GetBitArrayAsByte(str);
+  Serial.print(symbol);
   message = "";
 //  message.concat(lastBit);
 }
 
+char GetBitArrayAsByte(const char inputArray[8])
+{
+    char result = 0;
+    for (int idx = 0; idx < 8; ++idx)
+    {
+        result |= (inputArray[idx] << idx);
+    }
+    return result;
+}
 void loop() {
-  if ((millis() - IOTimer) > OUTPUT_INTERVAL) {
-    Serial.print(signalsReceived);
-    Serial.println(" " + message);
-    IOTimer = millis();
-  }
+//  if ((millis() - IOTimer) > OUTPUT_INTERVAL) {
+//    Serial.print(signalsReceived);
+//    Serial.println(" " + message);
+//    IOTimer = millis();
+//  }
   
   
 }
