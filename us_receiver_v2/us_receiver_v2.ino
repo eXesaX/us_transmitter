@@ -1,5 +1,5 @@
 #define OUTPUT_INTERVAL 1000
-#define SIGNAL_GAP 450
+#define SIGNAL_GAP 80
 #define EOM_THRESHOLD 1000
 
 volatile long acc = 0;
@@ -19,7 +19,7 @@ void setup() {
 
 void onHigh() {
   acc += 1;
-  if ((millis() - lastFrontTime > 2*SIGNAL_GAP)) {
+  if ((millis() - lastFrontTime > 1.4*SIGNAL_GAP)) {
     signalsReceived += 1;
     message.concat('0');
 //    detectEOM();
@@ -27,7 +27,7 @@ void onHigh() {
     signalsReceived += 1;
     message.concat('1');
 //    detectEOM();
-  } else if((millis() - lastFrontTime > (SIGNAL_GAP / 3))) {
+  } else if((millis() - lastFrontTime > (0.5*SIGNAL_GAP))) {
     showMessage();
   }
   

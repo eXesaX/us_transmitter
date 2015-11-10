@@ -1,5 +1,5 @@
 #define TIME 12
-#define SIGNAL_GAP 500
+#define SIGNAL_GAP 70
 
 void setup() {
   DDRB = B00000011;
@@ -20,7 +20,7 @@ void sendBits(String bits) {
       delay(2*SIGNAL_GAP);
     }
   }
-  for (int j = 0; j < 5; j++) {
+  for (int j = 0; j < 10; j++) {
     PORTB = B00000001;
     delayMicroseconds(TIME);
     PORTB = B00000000;
@@ -31,5 +31,5 @@ void sendBits(String bits) {
 }
 
 void loop() {
-  sendBits("11100011");
+  sendBits("00110011");
 }

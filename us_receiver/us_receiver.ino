@@ -1,5 +1,6 @@
 #define OUTPUT_INTERVAL 1000
-#define SIGNAL_GAP 450
+#define SIGNAL_GAP 30
+#define EOM_THRESHOLD 850
 
 volatile long acc = 0;
 volatile long lastFrontTime = 0;
@@ -34,8 +35,8 @@ void onHigh() {
 }
 
 void detectEOM() {
-//  Serial.println(acc);
-  if (acc > 1000) {
+  Serial.println(acc);
+  if (acc > EOM_THRESHOLD) {
     showMessage();
   }
   acc = 0;
