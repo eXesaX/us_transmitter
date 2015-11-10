@@ -20,15 +20,33 @@ void onHigh() {
   acc += 1;
   if ((millis() - lastFrontTime > 2*SIGNAL_GAP)) {
     signalsReceived += 1;
-    acc = 0;
-    message.concat("0");
+    message.concat('0');
+    detectEOM();
   } else if ((millis() - lastFrontTime > SIGNAL_GAP)) {
     signalsReceived += 1;
-    acc = 0;
-    message.concat("1");
+    message.concat('1');
+    detectEOM();
   }
+  
+ 
   lastFrontTime = millis();
   
+}
+
+void detectEOM() {
+//  Serial.println(acc);
+  if (acc > 1000) {
+    showMessage();
+  }
+  acc = 0;
+}
+
+void showMessage() {
+  char lastBit = message.charAt(message.length() - 1);
+  message.remove(message.length() - 1);
+  Serial.println("Message: " + message);
+  message = "";
+  message.concat(lastBit);
 }
 
 void loop() {

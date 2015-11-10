@@ -7,7 +7,7 @@ void setup() {
 }
 
 void sendBits(String bits) {
-  for (int i = 0; i < bits.length(); i++) {;
+  for (int i = 0; i < bits.length(); i++) {
     if (bits.charAt(i) == '1') {
       PORTB = B00000001;
       delayMicroseconds(TIME);
@@ -19,8 +19,14 @@ void sendBits(String bits) {
       PORTB = B00000000;
       delay(2*SIGNAL_GAP);
     }
-    
   }
+  for (int j = 0; j < 5; j++) {
+    PORTB = B00000001;
+    delayMicroseconds(TIME);
+    PORTB = B00000000;
+    delayMicroseconds(TIME);
+  }
+  
   
 }
 
