@@ -1,13 +1,20 @@
 #define OUTPUT_INTERVAL 1000
 #define SIGNAL_GAP 200
 #define EOM_THRESHOLD 1000
-
-volatile long acc = 0;
+#define SPIKE_TIME_LOWEST 20
+#define SPIKE_TIME_HIGHEST 40
+#define RELAX_DELAY 50
+#define SPIKES 5
 volatile long lastFrontTime = 0;
 volatile int signalsReceived = 0;
 long IOTimer = 0;
 String message = "";
-long lFT = 0;
+volatile bool messageReady = false;
+
+volatile bool seeking = true;
+volatile byte spikes = 0;
+volatile long prevSpikeTime = 0;
+
 void setup() {
   // put your setup code here, to run once:
   pinMode(8, INPUT);
@@ -18,37 +25,41 @@ void setup() {
 }
 
 void onHigh() {
-  acc += 1;
-  if ((millis() - lastFrontTime > 1.4*SIGNAL_GAP)) {
-    signalsReceived += 1;
-    message.concat('0');
-//    detectEOM();
-  } else if ((millis() - lastFrontTime > SIGNAL_GAP)) {
-    signalsReceived += 1;
-    message.concat('1');
-//    detectEOM();
-  } else if((millis() - lastFrontTime > (0.3*SIGNAL_GAP))) {
-    showMessage();
+  if (seeking) {
+    long spikeTime = micros() - prevSpikeTime;
+    if ((spikeTime > SPIKE_TIME_LOWEST) && (spikeTime < SPIKE_TIME_HIGHEST)) {
+      spikes += 1;
+    } else {
+      spikes = 0;
+    }
+    prevSpikeTime = micros();
+
+    if (spikes == SPIKES) {
+      if ((millis() - lastFrontTime > 1.4*SIGNAL_GAP)) {
+        signalsReceived += 1;
+        message.concat('0');
+      } else if ((millis() - lastFrontTime > SIGNAL_GAP)) {
+        signalsReceived += 1;
+        message.concat('1');
+      } else if((millis() - lastFrontTime > (0.3*SIGNAL_GAP))) {
+//        showMessage();
+        messageReady = true;
+      }
+      lastFrontTime = millis();
+      delay(RELAX_DELAY);
+    }
+  } else {
+    seeking = true;
   }
-  
- 
-  lastFrontTime = millis();
+
   
 }
 
-void detectEOM() {
-//  Serial.println(acc);
-  if (acc > EOM_THRESHOLD) {
-    showMessage();
-  }
-  acc = 0;
-}
 
 void showMessage() {
 //  char lastBit = message.charAt(message.length() - 1);
 //  message.remove(message.length() - 1);
 //  Serial.println("Message: " + message);
-  char str[8];
 //  message.toCharArray(str, 8);
 //  char symbol = GetBitArrayAsByte(str);
   char symbol = 0;
@@ -83,10 +94,17 @@ void loop() {
   
   
   if ((millis() - IOTimer) > OUTPUT_INTERVAL) {
-//    Serial.print(signalsReceived);
-//    Serial.println(" " + message);
+    Serial.println(signalsReceived);
+//    Serial.println(message);
+//    Serial.println("Spikes" + String(spikes));
     IOTimer = millis();
   }
-  
+  if (messageReady) {
+    showMessage();
+    messageReady = false;
+  }
+//  if (spikes > 0) {
+//    Serial.println(spikes);
+//  }
   
 }
