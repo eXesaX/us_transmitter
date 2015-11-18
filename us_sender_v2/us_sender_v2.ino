@@ -1,7 +1,7 @@
 #define TIME 15
 #define SIGNAL_GAP 250
 
-String message = "ABCDEF";
+String message = "hello\n";
 
 void setup() {
   DDRB = B00000011;
@@ -67,15 +67,27 @@ void sendBits(String bits) {
 }
 
 void loop() {
-  
-  for (int num = 0; num < message.length(); num++) {
-    String bits = String(message.charAt(num), BIN);
-    for (int n = 0; n < 8 - bits.length(); n++) {
-      bits = "0" + bits;
+  if (message.length() > 0) {
+    for (int num = 0; num < message.length(); num++) {
+      String bits = String(message.charAt(num), BIN);
+      Serial.println(bits);
+      Serial.println(bits.length());
+//      for (int n = 0; n < 8 - bits.length(); n++) {
+//        bits = "0" + bits;
+//      }
+      while (bits.length() < 8) {
+        bits = "0" + bits;
+      }
+      Serial.println(bits);
+      Serial.println(bits.length());
+      Serial.println();
+      sendBits(bits);
     }
-    Serial.println(bits);
-    sendBits(bits);
   }
-//  Serial.println(message);
+  
+  if (Serial.available() > 0) {
+    message = Serial.readString();
+    Serial.println(message);
+  }
   
 }
