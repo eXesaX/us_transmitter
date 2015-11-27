@@ -1,10 +1,7 @@
 #include "DualVNH5019MotorShield.h"
 #define OUTPUT_INTERVAL 1000
-#define SIGNAL_GAP 200
-#define SPIKE_TIME_LOWEST 20
-#define SPIKE_TIME_HIGHEST 40
-#define RELAX_DELAY 50
-#define SPIKES 5
+#define SIGNAL_GAP 250
+#define RELAX_DELAY 10
 
 long encoderThreshold = 1000;
 volatile long lastFrontTime = 0;
@@ -16,14 +13,13 @@ bool start = false;
 bool finish = false;
 String completeMessage = "";
 volatile long encoderCounter = 0;
-volatile bool seeking = true;
-volatile byte spikes = 0;
-volatile long prevSpikeTime = 0;
 long LEDTimer = 0;
 bool LED = false;
 bool LEDflag = true;
 bool over = false;
-DualVNH5019MotorShield motor;
+String times = "";
+volatile int noise = false;
+//DualVNH5019MotorShield motor;
 
 void setup() {
   // put your setup code here, to run once:
@@ -32,38 +28,31 @@ void setup() {
   pinMode(A0, INPUT);
   pinMode(49, OUTPUT);
   Serial.begin(115200);
-  attachInterrupt(digitalPinToInterrupt(19), onHigh, RISING);
+  Serial.println("Hello");
+  attachInterrupt(digitalPinToInterrupt(2), onHigh, FALLING);
   attachInterrupt(digitalPinToInterrupt(18), encoderInterrupt, RISING);
-  motor.init();
+//  motor.init();
 }
 
 void onHigh() {
-  if (seeking) {
-    long spikeTime = micros() - prevSpikeTime;
-    if ((spikeTime > SPIKE_TIME_LOWEST) && (spikeTime < SPIKE_TIME_HIGHEST)) {
-      spikes += 1;
-    } else {
-      spikes = 0;
-    }
-    prevSpikeTime = micros();
-
-    if (spikes == SPIKES) {
-      if ((millis() - lastFrontTime > 1.4*SIGNAL_GAP)) {
-        signalsReceived += 1;
-        message.concat('0');
-      } else if ((millis() - lastFrontTime > SIGNAL_GAP)) {
-        signalsReceived += 1;
-        message.concat('1');
-      } else if((millis() - lastFrontTime > (0.3*SIGNAL_GAP))) {
-//        showMessage();
-        messageReady = true;
-      }
-      lastFrontTime = millis();
-      delay(RELAX_DELAY);
-    }
+  long lft = millis() - lastFrontTime;
+  times += String(lft) + " ";
+  if (lft < 0.5*SIGNAL_GAP) {
+    noise++;
   } else {
-    seeking = true;
+   if ((lft > 1.5*SIGNAL_GAP)) {
+    signalsReceived += 1;
+    message.concat('0');
+  } else if ((lft > SIGNAL_GAP)) {
+    signalsReceived += 1;
+    message.concat('1');
+  } else if((lft > (0.5*SIGNAL_GAP))) {
+    messageReady = true;
   }
+  lastFrontTime = millis();
+      delayMicroseconds(RELAX_DELAY*1000);
+  }
+  
 }
 
 
@@ -95,14 +84,14 @@ void showMessage() {
 
 void startMotor(int dir) {
   encoderCounter = 0;
-  motor.setM2Speed(100 * dir);
+//  motor.setM2Speed(100 * dir);
 }
 
 void encoderInterrupt() {
   encoderCounter++;
 
   if (encoderCounter > encoderThreshold) {
-    motor.setM2Speed(0);
+//    motor.setM2Speed(0);
   }
 }
 
@@ -113,8 +102,16 @@ void loop() {
   
   
 if ((millis() - IOTimer) > OUTPUT_INTERVAL) {
-   Serial.println(signalsReceived);
-   Serial.println(message);
+   Serial.print(signalsReceived);
+   Serial.print(" ");
+   Serial.print(noise);
+   Serial.print(" ");
+  Serial.println(times + "/" + String(SIGNAL_GAP) + String(" ")
+                             + String(1.5*SIGNAL_GAP) + String(" ")
+                             + String(0.5*SIGNAL_GAP) + String(" "));
+  noise = 0;                           
+  times = "";
+//   times = "";
 //   Serial.println("Spikes" + String(spikes));
    IOTimer = millis();
   }
